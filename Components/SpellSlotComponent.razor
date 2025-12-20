@@ -1,0 +1,306 @@
+@using SpellBrigadeCalculator.Engine
+@using SpellBrigadeCalculator.Engine.Spells
+
+<div class="spell-slot">
+    <label>@Label</label>
+
+    @if (IsSignature)
+    {
+        <select class="spell-select" disabled>
+            @if (SpellSlot.Spell != null)
+            {
+                <option value="@SpellSlot.Spell.Name">@SpellSlot.Spell.Name</option>
+            }
+            else
+            {
+                <option value="">--</option>
+            }
+        </select>
+    }
+    else
+    {
+        <select class="spell-select" value="@SpellSlot.Spell?.Name" @onchange="OnSpellChanged">
+            <option value="">-- Choose --</option>
+            @foreach (var spell in AvailableSpells)
+            {
+                <option value="@spell.Name">@spell.Name</option>
+            }
+        </select>
+    }
+
+    @if (SpellSlot.Spell != null)
+    {
+        <div class="spell-icon">
+            <img src="@SpellSlot.Spell.ImagePath" alt="@SpellSlot.Spell.Name" />
+        </div>
+
+        <div class="upgrade-section">
+            <div class="upgrade-columns">
+                <div class="upgrade-group">
+                    <span class="upgrade-title">Increase Spell Damage</span>
+                    @foreach (var value in DamageUpgradeValues)
+                    {
+                        <div class="upgrade-row">
+                            <button class="upgrade-btn" @onclick="() => AddDamageUpgrade(value)">
+                                @value%
+                            </button>
+                            <span class="predicted-dps">+@GetDpsIncreasePercentWithDamage(value).ToString("F1")%</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="upgrade-group">
+                    <span class="upgrade-title">Reduce Spell Cooldown</span>
+                    @foreach (var value in CooldownUpgradeValues)
+                    {
+                        <div class="upgrade-row">
+                            <button class="upgrade-btn" @onclick="() => AddCooldownUpgrade(value)">
+                                @value%
+                            </button>
+                            <span class="predicted-dps">+@GetDpsIncreasePercentWithCooldown(value).ToString("F1")%</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="spell-stats">
+                    <div class="stat-row">
+                        <span class="stat-label">Titan's Fury</span>
+                        <span class="stat-value">+@TotalTitansFury%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Spell Damage</span>
+                        <span class="stat-value">+@TotalSpellDamagePercent%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Cast Speed</span>
+                        <span class="stat-value">+@TotalCastSpeedPercent.ToString("F1")%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Global CD</span>
+                        <span class="stat-value">-@TotalGlobalCDReduction%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Cast Time</span>
+                        <span class="stat-value">@EffectiveCastTime.ToString("F2")s</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Crit Chance</span>
+                        <span class="stat-value">@TotalCritChance%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Crit Damage</span>
+                        <span class="stat-value">@TotalCritDamage%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public required string Label { get; set; }
+    [Parameter] public required SpellSlot SpellSlot { get; set; }
+    [Parameter] public required GameState GameState { get; set; }
+    [Parameter] public bool IsSignature { get; set; }
+    [Parameter] public IEnumerable<SpellBase> AvailableSpells { get; set; } = [];
+    [Parameter] public EventCallback OnStateChanged { get; set; }
+
+    private static readonly int[] DamageUpgradeValues = [10, 15, 25, 35];
+    private static readonly int[] CooldownUpgradeValues = [10, 15, 25, 35];
+
+    private double CurrentDps => DpsEngine.CalculateDps(GameState, SpellSlot);
+
+    // Computed stats for display
+    private int TotalTitansFury
+    {
+        get
+        {
+            if (GameState.Wizard == null)
+            {
+                return 0;
+            }
+
+            var (titansFury, _, _, _) = GameState.GetGlobalUpgrades();
+            return GameState.Wizard.TitansFury + titansFury;
+        }
+    }
+
+    private int TotalSpellDamagePercent
+    {
+        get
+        {
+            if (GameState.Wizard == null || SpellSlot.Spell == null)
+            {
+                return 0;
+            }
+
+            var (spellDamage, _) = GameState.GetSpellUpgrades(SpellSlot.Spell.Name);
+            return GameState.Wizard.IncreaseSpellDamage + spellDamage;
+        }
+    }
+
+    private double TotalCastSpeedPercent
+    {
+        get
+        {
+            if (GameState.Wizard == null || SpellSlot.Spell == null)
+            {
+                return 0;
+            }
+
+            var (_, spellCooldown) = GameState.GetSpellUpgrades(SpellSlot.Spell.Name);
+            var (_, veilOfHaste, _, _) = GameState.GetGlobalUpgrades();
+            // Total spell CD reduction (acts as divisor, so it's effectively "cast speed increase")
+            return GameState.Wizard.ReduceSpellCooldown + spellCooldown;
+        }
+    }
+
+    private int TotalGlobalCDReduction
+    {
+        get
+        {
+            if (GameState.Wizard == null)
+            {
+                return 0;
+            }
+
+            var (_, veilOfHaste, _, _) = GameState.GetGlobalUpgrades();
+            return GameState.Wizard.ReduceGlobalCooldown + veilOfHaste;
+        }
+    }
+
+    private double EffectiveCastTime
+    {
+        get
+        {
+            if (GameState.Wizard == null || SpellSlot.Spell == null)
+            {
+                return 0;
+            }
+
+            var (_, spellCooldown) = GameState.GetSpellUpgrades(SpellSlot.Spell.Name);
+            var (_, veilOfHaste, _, _) = GameState.GetGlobalUpgrades();
+
+            double baseCooldown = SpellSlot.Spell.BaseCooldownMs / 1000.0;
+            double globalCDMultiplier = Math.Max(1 - (GameState.Wizard.ReduceGlobalCooldown + veilOfHaste) / 100.0, 0.1);
+            double spellCDDivisor = 1 + (GameState.Wizard.ReduceSpellCooldown + spellCooldown) / 100.0;
+
+            return baseCooldown * globalCDMultiplier / spellCDDivisor;
+        }
+    }
+
+    private int TotalCritChance
+    {
+        get
+        {
+            if (GameState.Wizard == null)
+            {
+                return 0;
+            }
+
+            var (_, _, casterPrecision, _) = GameState.GetGlobalUpgrades();
+            return Math.Min(GameState.Wizard.IncreaseCriticalChance + casterPrecision, 100);
+        }
+    }
+
+    private int TotalCritDamage
+    {
+        get
+        {
+            if (GameState.Wizard == null)
+            {
+                return 0;
+            }
+
+            var (_, _, _, wizardsEdge) = GameState.GetGlobalUpgrades();
+            return GameState.Wizard.IncreaseBaseCriticalDamage + wizardsEdge;
+        }
+    }
+
+    private double GetDpsIncreasePercentWithDamage(int damageValue)
+    {
+        if (SpellSlot.Spell == null)
+        {
+            return 0;
+        }
+
+        var currentDps = DpsEngine.CalculateDps(GameState, SpellSlot);
+        if (currentDps == 0)
+        {
+            return 0;
+        }
+
+        var upgrade = new Upgrade
+        {
+            Name = $"{SpellSlot.Spell.Name} Damage +{damageValue}%",
+            SpellName = SpellSlot.Spell.Name,
+            IncreaseSpellDamage = damageValue
+        };
+        var newDps = DpsEngine.CalculateDpsWithUpgrade(GameState, SpellSlot, upgrade);
+        return (newDps - currentDps) / currentDps * 100;
+    }
+
+    private double GetDpsIncreasePercentWithCooldown(int cooldownValue)
+    {
+        if (SpellSlot.Spell == null)
+        {
+            return 0;
+        }
+
+        var currentDps = DpsEngine.CalculateDps(GameState, SpellSlot);
+        if (currentDps == 0)
+        {
+            return 0;
+        }
+
+        var upgrade = new Upgrade
+        {
+            Name = $"{SpellSlot.Spell.Name} Cooldown -{cooldownValue}%",
+            SpellName = SpellSlot.Spell.Name,
+            ReduceSpellCooldown = cooldownValue
+        };
+        var newDps = DpsEngine.CalculateDpsWithUpgrade(GameState, SpellSlot, upgrade);
+        return (newDps - currentDps) / currentDps * 100;
+    }
+
+    private async Task OnSpellChanged(ChangeEventArgs e)
+    {
+        var spellName = e.Value?.ToString();
+        SpellSlot.Spell = string.IsNullOrEmpty(spellName)
+            ? null
+            : AvailableSpells.FirstOrDefault(s => s.Name == spellName);
+        await OnStateChanged.InvokeAsync();
+    }
+
+    private async Task AddDamageUpgrade(int value)
+    {
+        if (SpellSlot.Spell == null)
+        {
+            return;
+        }
+
+        GameState.AddUpgrade(new Upgrade
+        {
+            Name = $"{SpellSlot.Spell.Name} Damage +{value}%",
+            SpellName = SpellSlot.Spell.Name,
+            IncreaseSpellDamage = value
+        });
+        await OnStateChanged.InvokeAsync();
+    }
+
+    private async Task AddCooldownUpgrade(int value)
+    {
+        if (SpellSlot.Spell == null)
+        {
+            return;
+        }
+
+        GameState.AddUpgrade(new Upgrade
+        {
+            Name = $"{SpellSlot.Spell.Name} Cooldown -{value}%",
+            SpellName = SpellSlot.Spell.Name,
+            ReduceSpellCooldown = value
+        });
+        await OnStateChanged.InvokeAsync();
+    }
+}

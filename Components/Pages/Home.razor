@@ -1,0 +1,292 @@
+@page "/"
+@using SpellBrigadeCalculator.Engine
+@using SpellBrigadeCalculator.Engine.Spells
+@inject WizardService WizardService
+@inject SpellService SpellService
+@rendermode InteractiveServer
+
+<PageTitle>Spell Brigade Calculator</PageTitle>
+
+<div class="calculator-layout">
+    <!-- Header -->
+    <header class="header-section">
+        <h1>Spell Brigade Calculator</h1>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Wizard Section -->
+        <aside class="wizard-section">
+            <h3>Wizard</h3>
+            <select class="wizard-select" @bind="SelectedWizardName">
+                <option value="">-- Choose Wizard --</option>
+                @foreach (var wizard in WizardService.GetAllWizards())
+                {
+                    <option value="@wizard.Name">@wizard.Name</option>
+                }
+            </select>
+
+            @if (GameState.Wizard != null)
+            {
+                <div class="wizard-portrait">
+                    <img src="@GameState.Wizard.ImagePath" alt="@GameState.Wizard.Name" />
+                </div>
+            }
+        </aside>
+
+        <!-- Spells and Global Section -->
+        <div class="right-content">
+            <!-- Spells Section -->
+            <section class="spells-section">
+                <h2>Spells</h2>
+                <div class="spell-slots">
+                    <SpellSlotComponent
+                        Label="Signature"
+                        SpellSlot="GameState.Spell1"
+                        GameState="GameState"
+                        IsSignature="true"
+                        OnStateChanged="StateHasChanged" />
+
+                    <SpellSlotComponent
+                        Label="Spell 2"
+                        SpellSlot="GameState.Spell2"
+                        GameState="GameState"
+                        AvailableSpells="AvailableSpells"
+                        OnStateChanged="StateHasChanged" />
+
+                    <SpellSlotComponent
+                        Label="Spell 3"
+                        SpellSlot="GameState.Spell3"
+                        GameState="GameState"
+                        AvailableSpells="AvailableSpells"
+                        OnStateChanged="StateHasChanged" />
+
+                    <SpellSlotComponent
+                        Label="Spell 4"
+                        SpellSlot="GameState.Spell4"
+                        GameState="GameState"
+                        AvailableSpells="AvailableSpells"
+                        OnStateChanged="StateHasChanged" />
+                </div>
+            </section>
+
+            <!-- Global Section -->
+            <section class="global-section">
+                <h2>Global</h2>
+                @if (GameState.Wizard != null && GameState.Spell1.Spell != null)
+                {
+                    <div class="global-table">
+                        <!-- Header row with spell names -->
+                        <div class="global-header-row">
+                            <div class="global-cell header-label"></div>
+                            <div class="global-cell header-spell">@(GameState.Spell1.Spell?.Name ?? "-")</div>
+                            <div class="global-cell header-spell">@(GameState.Spell2.Spell?.Name ?? "-")</div>
+                            <div class="global-cell header-spell">@(GameState.Spell3.Spell?.Name ?? "-")</div>
+                            <div class="global-cell header-spell">@(GameState.Spell4.Spell?.Name ?? "-")</div>
+                        </div>
+
+                        <!-- Titan's Fury -->
+                        <div class="global-upgrade-row">
+                            <div class="global-cell upgrade-label">Titan's Fury (Base Damage)</div>
+                        </div>
+                        @foreach (var value in TitansFuryValues)
+                        {
+                            <div class="global-upgrade-row">
+                                <div class="global-cell">
+                                    <button class="upgrade-btn" @onclick="() => AddTitansFury(value)">+@value%</button>
+                                </div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell1, CreateTitansFuryUpgrade(value))</div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell2, CreateTitansFuryUpgrade(value))</div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell3, CreateTitansFuryUpgrade(value))</div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell4, CreateTitansFuryUpgrade(value))</div>
+                            </div>
+                        }
+
+                        <!-- Veil of Haste -->
+                        <div class="global-upgrade-row">
+                            <div class="global-cell upgrade-label">Veil of Haste (Cooldown)</div>
+                        </div>
+                        @foreach (var value in VeilOfHasteValues)
+                        {
+                            <div class="global-upgrade-row">
+                                <div class="global-cell">
+                                    <button class="upgrade-btn" @onclick="() => AddVeilOfHaste(value)">@value%</button>
+                                </div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell1, CreateVeilOfHasteUpgrade(value))</div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell2, CreateVeilOfHasteUpgrade(value))</div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell3, CreateVeilOfHasteUpgrade(value))</div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell4, CreateVeilOfHasteUpgrade(value))</div>
+                            </div>
+                        }
+
+                        <!-- Caster Precision -->
+                        <div class="global-upgrade-row">
+                            <div class="global-cell upgrade-label">Caster Precision (Crit Chance)</div>
+                        </div>
+                        @foreach (var value in CasterPrecisionValues)
+                        {
+                            <div class="global-upgrade-row">
+                                <div class="global-cell">
+                                    <button class="upgrade-btn" @onclick="() => AddCasterPrecision(value)">+@value%</button>
+                                </div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell1, CreateCasterPrecisionUpgrade(value))</div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell2, CreateCasterPrecisionUpgrade(value))</div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell3, CreateCasterPrecisionUpgrade(value))</div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell4, CreateCasterPrecisionUpgrade(value))</div>
+                            </div>
+                        }
+
+                        <!-- Wizard's Edge -->
+                        <div class="global-upgrade-row">
+                            <div class="global-cell upgrade-label">Wizard's Edge (Crit Damage)</div>
+                        </div>
+                        @foreach (var value in WizardsEdgeValues)
+                        {
+                            <div class="global-upgrade-row">
+                                <div class="global-cell">
+                                    <button class="upgrade-btn" @onclick="() => AddWizardsEdge(value)">+@value%</button>
+                                </div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell1, CreateWizardsEdgeUpgrade(value))</div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell2, CreateWizardsEdgeUpgrade(value))</div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell3, CreateWizardsEdgeUpgrade(value))</div>
+                                <div class="global-cell predicted-dps">@GetDpsIncreasePercent(GameState.Spell4, CreateWizardsEdgeUpgrade(value))</div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="placeholder-text">Select a wizard to see global upgrades</p>
+                }
+            </section>
+        </div>
+    </div>
+
+    <!-- History Section -->
+    <footer class="history-section">
+        <h2>History</h2>
+        <div class="history-container">
+            <div class="history-list">
+                @if (GameState.UpgradeHistory.Count == 0)
+                {
+                    <p class="placeholder-text">No upgrades selected yet</p>
+                }
+                else
+                {
+                    @foreach (var upgrade in GameState.UpgradeHistory)
+                    {
+                        <div class="history-item">@upgrade.DisplayText</div>
+                    }
+                }
+            </div>
+            <div class="history-actions">
+                <button class="undo-btn" @onclick="UndoLastUpgrade" disabled="@(GameState.UpgradeHistory.Count == 0)">
+                    Undo
+                </button>
+            </div>
+        </div>
+    </footer>
+</div>
+
+@code {
+    private GameState GameState { get; } = new();
+
+    private static readonly int[] TitansFuryValues = [5, 10, 15, 20];
+    private static readonly int[] VeilOfHasteValues = [6, 9, 12, 18];
+    private static readonly int[] CasterPrecisionValues = [4, 6, 9, 12];
+    private static readonly int[] WizardsEdgeValues = [10, 20, 35, 50];
+
+    private string? _selectedWizardName;
+    private string? SelectedWizardName
+    {
+        get => _selectedWizardName;
+        set
+        {
+            _selectedWizardName = value;
+            GameState.Reset();
+            GameState.Wizard = string.IsNullOrEmpty(value)
+                ? null
+                : WizardService.GetWizardByName(value);
+
+            if (GameState.Wizard != null)
+            {
+                GameState.Spell1.Spell = SpellService.GetSpellByName(GameState.Wizard.SignatureSpell);
+            }
+        }
+    }
+
+    private IEnumerable<SpellBase> AvailableSpells =>
+        SpellService.GetAllSpells().Where(s => s.Name != GameState.Spell1.Spell?.Name);
+
+    // Helper methods for creating upgrade objects
+    private Upgrade CreateTitansFuryUpgrade(int value) => new()
+    {
+        Name = $"Titan's Fury +{value}",
+        SpellName = null,
+        IncreaseSpellDamage = value
+    };
+
+    private Upgrade CreateVeilOfHasteUpgrade(int value) => new()
+    {
+        Name = $"Veil of Haste {value}%",
+        SpellName = null,
+        ReduceSpellCooldown = value
+    };
+
+    private Upgrade CreateCasterPrecisionUpgrade(int value) => new()
+    {
+        Name = $"Caster Precision +{value}%",
+        SpellName = null,
+        IncreaseCriticalChance = value
+    };
+
+    private Upgrade CreateWizardsEdgeUpgrade(int value) => new()
+    {
+        Name = $"Wizard's Edge +{value}%",
+        SpellName = null,
+        IncreaseBaseCriticalDamage = value
+    };
+
+    private string GetDpsIncreasePercent(SpellSlot slot, Upgrade upgrade)
+    {
+        if (slot.Spell == null)
+        {
+            return "-";
+        }
+
+        var currentDps = DpsEngine.CalculateDps(GameState, slot);
+        if (currentDps == 0)
+        {
+            return "-";
+        }
+
+        var newDps = DpsEngine.CalculateDpsWithUpgrade(GameState, slot, upgrade);
+        var increase = (newDps - currentDps) / currentDps * 100;
+        return $"+{increase:F1}%";
+    }
+
+    private void AddTitansFury(int value)
+    {
+        GameState.AddUpgrade(CreateTitansFuryUpgrade(value));
+    }
+
+    private void AddVeilOfHaste(int value)
+    {
+        GameState.AddUpgrade(CreateVeilOfHasteUpgrade(value));
+    }
+
+    private void AddCasterPrecision(int value)
+    {
+        GameState.AddUpgrade(CreateCasterPrecisionUpgrade(value));
+    }
+
+    private void AddWizardsEdge(int value)
+    {
+        GameState.AddUpgrade(CreateWizardsEdgeUpgrade(value));
+    }
+
+    private void UndoLastUpgrade()
+    {
+        GameState.UndoLastUpgrade();
+    }
+}

@@ -1,0 +1,10 @@
+So. We are going to do a calculator for the game Spell brigade.
+Its going to be a web app, Blazor, C#
+
+Start with setting up the project..
+Lets name it SpellBrigadeCalculator
+
+Then we will follow with Task1.txt
+I will later add more tasks with a number and then we do that, until we are done
+
+There is a Task1.txt present. Lets do that, and after then I add task 2
