@@ -1,8 +1,10 @@
-html, body {
+html,
+body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-a, .btn-link {
+a,
+.btn-link {
     color: #006bb7;
 }
 
@@ -12,8 +14,12 @@ a, .btn-link {
     border-color: #1861ac;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 .content {
@@ -42,20 +48,22 @@ h1:focus {
     color: white;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
+.blazor-error-boundary::after {
+    content: "An error has occurred."
+}
 
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+.form-floating>.form-control-plaintext::placeholder,
+.form-floating>.form-control::placeholder {
     color: var(--bs-secondary-color);
     text-align: end;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+.form-floating>.form-control-plaintext:focus::placeholder,
+.form-floating>.form-control:focus::placeholder {
     text-align: start;
 }
 
@@ -202,22 +210,24 @@ h1:focus {
 
 /* Global Section */
 .global-section {
-    flex: 1;
-    padding: 20px;
+    flex: 0 0 auto;
+    padding: 12px 20px;
     background-color: #1a1a2e;
 }
 
 .global-section h2 {
-    font-size: 20px;
-    margin-bottom: 15px;
+    font-size: 16px;
+    margin-bottom: 10px;
     color: #e94560;
 }
 
 /* History Section */
 .history-section {
+    flex: 1;
     padding: 20px;
     background-color: #16213e;
     border-top: 2px solid #0f3460;
+    min-height: 200px;
 }
 
 .history-section h2 {
@@ -332,22 +342,22 @@ h1:focus {
 .global-upgrades {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 12px;
 }
 
 .global-upgrade-group {
     flex: 1;
-    min-width: 150px;
+    min-width: 120px;
     background-color: #16213e;
-    padding: 15px;
-    border-radius: 8px;
+    padding: 10px;
+    border-radius: 6px;
     border: 1px solid #0f3460;
 }
 
 .global-upgrade-group .upgrade-title {
-    font-size: 12px;
+    font-size: 11px;
     color: #e94560;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
 }
 
 .placeholder-text {
@@ -364,27 +374,27 @@ h1:focus {
 
 .global-header-row {
     display: flex;
-    gap: 10px;
-    padding: 8px 0;
+    gap: 8px;
+    padding: 4px 0;
     border-bottom: 2px solid #0f3460;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
 }
 
 .global-upgrade-row {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
-    padding: 4px 0;
+    padding: 2px 0;
 }
 
 .global-cell {
     flex: 1;
     text-align: center;
-    min-width: 80px;
+    min-width: 60px;
 }
 
 .global-cell:first-child {
-    flex: 0 0 180px;
+    flex: 0 0 150px;
     text-align: left;
 }
 
@@ -393,25 +403,27 @@ h1:focus {
 }
 
 .header-spell {
-    font-size: 12px;
+    font-size: 10px;
     color: #e94560;
     font-weight: bold;
 }
 
 .upgrade-label {
-    font-size: 13px;
+    font-size: 11px;
     color: #e94560;
     font-weight: bold;
-    padding: 10px 0 5px 0;
+    padding: 6px 0 3px 0;
 }
 
 .global-cell .upgrade-btn {
     width: 100%;
-    max-width: 60px;
+    max-width: 50px;
+    padding: 3px 6px;
+    font-size: 10px;
 }
 
 .global-cell.predicted-dps {
-    font-size: 12px;
+    font-size: 10px;
     color: #4ecca3;
 }
 

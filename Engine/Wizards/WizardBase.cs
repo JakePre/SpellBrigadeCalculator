@@ -23,6 +23,18 @@ public abstract record WizardBase
     public int ReduceGlobalCooldown { get; init; } = 0;
 
     /// <summary>
+    /// Signature spell bonus: Increase Spell Damage (percentage)
+    /// This bonus ONLY applies to the wizard's signature spell
+    /// </summary>
+    public int SignatureSpellDamageBonus { get; init; } = 0;
+
+    /// <summary>
+    /// Signature spell bonus: Reduce Spell Cooldown (percentage)
+    /// This bonus ONLY applies to the wizard's signature spell
+    /// </summary>
+    public int SignatureSpellCooldownReduction { get; init; } = 0;
+
+    /// <summary>
     /// Wiki: "Increase Critical Chance" (percentage, base 5%)
     /// </summary>
     public int IncreaseCriticalChance { get; init; } = 5;

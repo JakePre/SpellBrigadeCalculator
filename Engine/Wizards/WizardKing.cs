@@ -8,7 +8,10 @@ public record WizardKing : WizardBase
 
     public WizardKing()
     {
-        ReduceGlobalCooldown = 8;
-        IncreaseCriticalChance = 15;
+        // Global wizard stat
+        IncreaseCriticalChance = 15; // Base 5% + 10% = 15%
+        
+        // Signature spell bonuses (only apply to Magic Missile)
+        SignatureSpellCooldownReduction = 8;
     }
 }

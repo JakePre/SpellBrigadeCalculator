@@ -8,7 +8,8 @@ public record Aldric : WizardBase
 
     public Aldric()
     {
-        IncreaseSpellDamage = 8;
-        ReduceGlobalCooldown = 4;
+        // Signature spell bonuses (only apply to Aether Beam)
+        SignatureSpellDamageBonus = 8;
+        SignatureSpellCooldownReduction = 4;
     }
 }
