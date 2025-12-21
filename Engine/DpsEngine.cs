@@ -49,10 +49,10 @@ public static class DpsEngine
         int wizardsEdge = 0,
         bool isSignatureSpell = false)
     {
-        // Calculate base damage with Titan's Fury (percentage of base, added as flat)
-        // Titan's Fury: BaseDamage × (1 + TitansFury%)
+        // Calculate base damage with Titan's Fury (flat additive damage)
+        // Formula: (BaseDmg + TitansFury)
         double totalTitansFury = wizard.TitansFury + titansFury;
-        double totalBaseDamage = spell.BaseDamage * (1 + totalTitansFury / 100.0);
+        double totalBaseDamage = spell.BaseDamage + totalTitansFury;
 
         // Apply percentage damage modifier (wizard + spell upgrade + signature bonus if applicable)
         double totalDamagePercent = wizard.IncreaseSpellDamage + spellDamageBonus;
@@ -62,10 +62,11 @@ public static class DpsEngine
         }
         double damageWithModifiers = totalBaseDamage * (1 + totalDamagePercent / 100.0);
 
-        // Calculate critical hit factor (crit chance capped at 100%)
+        // Calculate critical hit factor
+        // Formula: 1 + (CritChance/100 × CritMult/100)
         double critChance = Math.Min((wizard.IncreaseCriticalChance + casterPrecision) / 100.0, 1.0);
         double critMultiplier = (wizard.IncreaseBaseCriticalDamage + wizardsEdge) / 100.0;
-        double critFactor = 1 + (critChance * (critMultiplier - 1));
+        double critFactor = 1 + (critChance * critMultiplier);
 
         // Apply crit factor to get final damage per hit
         double finalDamagePerHit = damageWithModifiers * critFactor;
