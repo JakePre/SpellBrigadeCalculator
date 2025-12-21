@@ -26,7 +26,7 @@ public record Upgrade
 
             if (ReduceSpellCooldown > 0)
             {
-                return $"{target} - Reduce Spell Cooldown: {ReduceSpellCooldown}%";
+                return $"{target} - Increase Cast Speed: {ReduceSpellCooldown}%";
             }
 
             if (IncreaseCriticalChance > 0)
