@@ -140,11 +140,18 @@ h1:focus {
     border: 2px solid #e94560;
 }
 
-/* Right Content (Spells + Global) */
+/* Right Content (Spells + Global + History) */
 .right-content {
     flex: 1;
     display: flex;
     flex-direction: column;
+}
+
+/* Bottom Content (Global + History side by side) */
+.bottom-content {
+    display: flex;
+    flex: 1;
+    gap: 0;
 }
 
 /* Spells Section */
@@ -213,27 +220,32 @@ h1:focus {
     flex: 0 0 auto;
     padding: 12px 20px;
     background-color: #1a1a2e;
+    border-right: 2px solid #0f3460;
+    max-width: 50%;
 }
 
 .global-section h2 {
     font-size: 16px;
     margin-bottom: 10px;
     color: #e94560;
+    text-align: center;
 }
 
 /* History Section */
 .history-section {
     flex: 1;
-    padding: 20px;
+    min-width: 50%;
+    padding: 12px 20px;
     background-color: #16213e;
-    border-top: 2px solid #0f3460;
-    min-height: 200px;
+    border-top: none;
+    min-height: auto;
 }
 
 .history-section h2 {
     font-size: 20px;
     margin-bottom: 15px;
     color: #e94560;
+    text-align: center;
 }
 
 /* Current Damage Display */
@@ -388,13 +400,13 @@ h1:focus {
 }
 
 .global-cell {
-    flex: 1;
+    flex: 0 0 45px;
     text-align: center;
-    min-width: 60px;
+    min-width: 45px;
 }
 
 .global-cell:first-child {
-    flex: 0 0 150px;
+    flex: 0 0 130px;
     text-align: left;
 }
 
@@ -430,13 +442,15 @@ h1:focus {
 /* History Section */
 .history-container {
     display: flex;
-    gap: 20px;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    height: 100%;
 }
 
 .history-list {
-    flex: 1;
-    max-height: 150px;
+    flex: 0 0 80%;
+    width: 80%;
     overflow-y: auto;
     background-color: #0f3460;
     border-radius: 8px;
@@ -459,18 +473,18 @@ h1:focus {
 
 .history-actions {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    justify-content: center;
 }
 
 .undo-btn {
-    padding: 10px 20px;
+    width: 80px;
+    padding: 8px 0;
     background-color: #e94560;
     color: #fff;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
     transition: all 0.2s;
 }
 
