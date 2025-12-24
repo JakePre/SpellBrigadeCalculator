@@ -12,6 +12,6 @@ public record WizardKing : WizardBase
         IncreaseCriticalChance = 15; // Base 5% + 10% = 15%
         
         // Signature spell bonuses (only apply to Magic Missile)
-        SignatureSpellCooldownReduction = 8;
+        SignatureSpellCastSpeedBonus = 8;
     }
 }

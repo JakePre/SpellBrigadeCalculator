@@ -15,7 +15,7 @@ public static class DpsEngine
             return 0;
         }
 
-        var (spellDamage, spellCooldown) = game.GetSpellUpgrades(spellSlot.Spell.Name);
+        var (spellDamage, spellCastSpeed) = game.GetSpellUpgrades(spellSlot.Spell.Name);
         var (titansFury, veilOfHaste, casterPrecision, wizardsEdge) = game.GetGlobalUpgrades();
         bool isSignatureSpell = spellSlot.Spell.Name == game.Wizard.SignatureSpell;
 
@@ -23,49 +23,57 @@ public static class DpsEngine
             game.Wizard,
             spellSlot.Spell,
             spellDamage,
-            spellCooldown,
+            spellCastSpeed,
             titansFury,
             veilOfHaste,
             casterPrecision,
             wizardsEdge,
-            isSignatureSpell);
+            isSignatureSpell,
+            game.EnchantmentDamagePercent,
+            game.EnchantmentCastSpeedPercent,
+            game.EnchantmentCritChancePercent,
+            game.EnchantmentCritDamagePercent);
     }
 
     /// <summary>
     /// Calculate DPS with all modifiers
     /// Formula:
     /// Damage = (BaseDamage × (1 + TitansFury%)) × (1 + SpellDamage%)
-    /// Cooldown = BaseCooldown × (1 - GlobalCD%) ÷ (1 + SpellCD%)
+    /// Cooldown = BaseCooldown × (1 - GlobalCD%) ÷ (1 + CastSpeed%)
     /// DPS = Damage / Cooldown
     /// </summary>
     private static double CalculateDps(
         WizardBase wizard,
         SpellBase spell,
         int spellDamageBonus = 0,
-        int spellCooldownReduction = 0,
+        int spellCastSpeedBonus = 0,
         int titansFury = 0,
         int veilOfHaste = 0,
         int casterPrecision = 0,
         int wizardsEdge = 0,
-        bool isSignatureSpell = false)
+        bool isSignatureSpell = false,
+        int enchantmentDamage = 0,
+        int enchantmentCastSpeed = 0,
+        int enchantmentCritChance = 0,
+        int enchantmentCritDamage = 0)
     {
         // Calculate base damage with Titan's Fury (flat additive damage)
         // Formula: (BaseDmg + TitansFury)
         double totalTitansFury = wizard.TitansFury + titansFury;
         double totalBaseDamage = spell.BaseDamage + totalTitansFury;
 
-        // Apply percentage damage modifier (wizard + spell upgrade + signature bonus if applicable)
-        double totalDamagePercent = wizard.IncreaseSpellDamage + spellDamageBonus;
+        // Apply percentage damage modifier (wizard + spell upgrade + signature bonus + enchantment)
+        double totalDamagePercent = wizard.IncreaseSpellDamage + spellDamageBonus + enchantmentDamage;
         if (isSignatureSpell)
         {
             totalDamagePercent += wizard.SignatureSpellDamageBonus;
         }
         double damageWithModifiers = totalBaseDamage * (1 + totalDamagePercent / 100.0);
 
-        // Calculate critical hit factor
+        // Calculate critical hit factor (including enchantment bonuses)
         // Formula: 1 + (CritChance/100 × CritMult/100)
-        double critChance = Math.Min((wizard.IncreaseCriticalChance + casterPrecision) / 100.0, 1.0);
-        double critMultiplier = (wizard.IncreaseBaseCriticalDamage + wizardsEdge) / 100.0;
+        double critChance = Math.Min((wizard.IncreaseCriticalChance + casterPrecision + enchantmentCritChance) / 100.0, 1.0);
+        double critMultiplier = (wizard.IncreaseBaseCriticalDamage + wizardsEdge + enchantmentCritDamage) / 100.0;
         double critFactor = 1 + (critChance * critMultiplier);
 
         // Apply crit factor to get final damage per hit
@@ -78,17 +86,17 @@ public static class DpsEngine
         // Cooldown = BaseCooldown × (1 - GlobalCD%) ÷ (1 + SpellCD%)
         double baseCooldownSec = spell.BaseCooldownMs / 1000.0;
 
-        // Global CD reduction (Veil of Haste + wizard base) - additive, applied as multiplier
-        double totalGlobalCdReduction = wizard.ReduceGlobalCooldown + veilOfHaste;
+        // Global CD reduction (Veil of Haste + wizard base + enchantment) - additive, applied as multiplier
+        double totalGlobalCdReduction = wizard.ReduceGlobalCooldown + veilOfHaste + enchantmentCastSpeed;
         double globalCdMultiplier = Math.Max(1 - totalGlobalCdReduction / 100.0, 0.1);
 
-        // Spell CD reduction (spell upgrades + wizard base + signature bonus if applicable) - additive, applied as divisor
-        double totalSpellCdReduction = wizard.ReduceSpellCooldown + spellCooldownReduction;
+        // Spell cast speed (spell upgrades + wizard base + signature bonus if applicable) - additive, applied as divisor
+        double totalSpellCastSpeed = wizard.IncreaseCastSpeed + spellCastSpeedBonus;
         if (isSignatureSpell)
         {
-            totalSpellCdReduction += wizard.SignatureSpellCooldownReduction;
+            totalSpellCastSpeed += wizard.SignatureSpellCastSpeedBonus;
         }
-        double spellCdDivisor = 1 + totalSpellCdReduction / 100.0;
+        double spellCdDivisor = 1 + totalSpellCastSpeed / 100.0;
 
         double effectiveCooldown = baseCooldownSec * globalCdMultiplier / spellCdDivisor;
 
@@ -106,7 +114,7 @@ public static class DpsEngine
             return 0;
         }
 
-        var (spellDamage, spellCooldown) = game.GetSpellUpgrades(spellSlot.Spell.Name);
+        var (spellDamage, spellCastSpeed) = game.GetSpellUpgrades(spellSlot.Spell.Name);
         var (titansFury, veilOfHaste, casterPrecision, wizardsEdge) = game.GetGlobalUpgrades();
         bool isSignatureSpell = spellSlot.Spell.Name == game.Wizard.SignatureSpell;
 
@@ -114,12 +122,12 @@ public static class DpsEngine
         if (hypotheticalUpgrade.SpellName == spellSlot.Spell.Name)
         {
             spellDamage += hypotheticalUpgrade.IncreaseSpellDamage;
-            spellCooldown += hypotheticalUpgrade.ReduceSpellCooldown;
+            spellCastSpeed += hypotheticalUpgrade.IncreaseCastSpeed;
         }
         else if (hypotheticalUpgrade.SpellName == null)
         {
             titansFury += hypotheticalUpgrade.IncreaseSpellDamage;
-            veilOfHaste += hypotheticalUpgrade.ReduceSpellCooldown;
+            veilOfHaste += hypotheticalUpgrade.IncreaseCastSpeed;
             casterPrecision += hypotheticalUpgrade.IncreaseCriticalChance;
             wizardsEdge += hypotheticalUpgrade.IncreaseBaseCriticalDamage;
         }
@@ -128,11 +136,15 @@ public static class DpsEngine
             game.Wizard,
             spellSlot.Spell,
             spellDamage,
-            spellCooldown,
+            spellCastSpeed,
             titansFury,
             veilOfHaste,
             casterPrecision,
             wizardsEdge,
-            isSignatureSpell);
+            isSignatureSpell,
+            game.EnchantmentDamagePercent,
+            game.EnchantmentCastSpeedPercent,
+            game.EnchantmentCritChancePercent,
+            game.EnchantmentCritDamagePercent);
     }
 }

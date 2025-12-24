@@ -10,6 +10,6 @@ public record Aldric : WizardBase
     {
         // Signature spell bonuses (only apply to Aether Beam)
         SignatureSpellDamageBonus = 8;
-        SignatureSpellCooldownReduction = 4;
+        SignatureSpellCastSpeedBonus = 4;
     }
 }

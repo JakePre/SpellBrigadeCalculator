@@ -427,6 +427,11 @@ h1:focus {
     padding: 6px 0 3px 0;
 }
 
+.global-heading {
+    width: 100%;
+    text-align: left;
+}
+
 .global-cell .upgrade-btn {
     width: 100%;
     max-width: 50px;
@@ -496,4 +501,39 @@ h1:focus {
     background-color: #555;
     cursor: not-allowed;
     opacity: 0.5;
+}
+
+/* Enchantments Section */
+.enchantments-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #0f3460;
+}
+
+.enchantments-section h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: #e94560;
+}
+
+.enchantment-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.enchantment-row label {
+    font-size: 11px;
+    color: #aaa;
+}
+
+.enchantment-row select {
+    width: 70px;
+    padding: 4px 6px;
+    background-color: #0f3460;
+    color: #eee;
+    border: 1px solid #e94560;
+    border-radius: 4px;
+    font-size: 11px;
 }

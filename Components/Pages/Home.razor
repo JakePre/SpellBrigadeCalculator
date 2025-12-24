@@ -32,6 +32,46 @@
                     <img src="@GameState.Wizard.ImagePath" alt="@GameState.Wizard.Name" />
                 </div>
             }
+
+            <div class="enchantments-section">
+                <h3>Enchantments</h3>
+                <div class="enchantment-row">
+                    <label>Damage</label>
+                    <select @bind="GameState.EnchantmentDamagePercent" @bind:after="StateHasChanged">
+                        @foreach (var value in EnchantmentDamageValues)
+                        {
+                            <option value="@value">@value%</option>
+                        }
+                    </select>
+                </div>
+                <div class="enchantment-row">
+                    <label>Cast Speed</label>
+                    <select @bind="GameState.EnchantmentCastSpeedPercent" @bind:after="StateHasChanged">
+                        @foreach (var value in EnchantmentCastSpeedValues)
+                        {
+                            <option value="@value">@value%</option>
+                        }
+                    </select>
+                </div>
+                <div class="enchantment-row">
+                    <label>Crit Chance</label>
+                    <select @bind="GameState.EnchantmentCritChancePercent" @bind:after="StateHasChanged">
+                        @foreach (var value in EnchantmentCritChanceValues)
+                        {
+                            <option value="@value">@value%</option>
+                        }
+                    </select>
+                </div>
+                <div class="enchantment-row">
+                    <label>Crit Damage</label>
+                    <select @bind="GameState.EnchantmentCritDamagePercent" @bind:after="StateHasChanged">
+                        @foreach (var value in EnchantmentCritDamageValues)
+                        {
+                            <option value="@value">@value%</option>
+                        }
+                    </select>
+                </div>
+            </div>
         </aside>
 
         <!-- Spells and Global Section -->
@@ -88,7 +128,7 @@
 
                             <!-- Titan's Fury -->
                             <div class="global-upgrade-row">
-                                <div class="global-cell upgrade-label">Titan's Fury (Base Damage)</div>
+                                <div class="global-heading upgrade-label">Titan's Fury (Base Damage)</div>
                             </div>
                             @foreach (var value in TitansFuryValues)
                             {
@@ -105,7 +145,7 @@
 
                             <!-- Veil of Haste -->
                             <div class="global-upgrade-row">
-                                <div class="global-cell upgrade-label">Veil of Haste (Cooldown)</div>
+                                <div class="global-heading upgrade-label">Veil of Haste (Cooldown)</div>
                             </div>
                             @foreach (var value in VeilOfHasteValues)
                             {
@@ -122,7 +162,7 @@
 
                             <!-- Caster Precision -->
                             <div class="global-upgrade-row">
-                                <div class="global-cell upgrade-label">Caster Precision (Crit Chance)</div>
+                                <div class="global-heading upgrade-label">Caster Precision (Crit Chance)</div>
                             </div>
                             @foreach (var value in CasterPrecisionValues)
                             {
@@ -139,7 +179,7 @@
 
                             <!-- Wizard's Edge -->
                             <div class="global-upgrade-row">
-                                <div class="global-cell upgrade-label">Wizard's Edge (Crit Damage)</div>
+                                <div class="global-heading upgrade-label">Wizard's Edge (Crit Damage)</div>
                             </div>
                             @foreach (var value in WizardsEdgeValues)
                             {
@@ -198,6 +238,12 @@
     private static readonly int[] CasterPrecisionValues = [4, 6, 9, 12];
     private static readonly int[] WizardsEdgeValues = [10, 20, 35, 50];
 
+    // Enchantment dropdown values
+    private static readonly int[] EnchantmentDamageValues = [0, 7, 12, 15, 20];
+    private static readonly int[] EnchantmentCastSpeedValues = [0, 3, 6, 9, 12];
+    private static readonly int[] EnchantmentCritChanceValues = [0, 4, 6, 8, 12];
+    private static readonly int[] EnchantmentCritDamageValues = [0, 7, 12, 18, 25];
+
     private string? _selectedWizardName;
     private string? SelectedWizardName
     {
@@ -232,7 +278,7 @@
     {
         Name = $"Veil of Haste {value}%",
         SpellName = null,
-        ReduceSpellCooldown = value
+        IncreaseCastSpeed = value
     };
 
     private Upgrade CreateCasterPrecisionUpgrade(int value) => new()

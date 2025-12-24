@@ -13,6 +13,12 @@ public class GameState
 
     public List<Upgrade> UpgradeHistory { get; } = [];
 
+    // Enchantment bonuses (permanent meta-progression stats)
+    public int EnchantmentDamagePercent { get; set; } = 0;
+    public int EnchantmentCastSpeedPercent { get; set; } = 0;
+    public int EnchantmentCritChancePercent { get; set; } = 0;
+    public int EnchantmentCritDamagePercent { get; set; } = 0;
+
     public void Reset()
     {
         Wizard = null;
@@ -38,20 +44,20 @@ public class GameState
 
     /// <summary>
     /// Get total spell-specific upgrades for a spell
-    /// Returns damage bonus (additive %) and cooldown reduction (additive %)
+    /// Returns damage bonus (additive %) and cast speed bonus (additive %)
     /// </summary>
-    public (int damageBonus, int cooldownReduction) GetSpellUpgrades(string spellName)
+    public (int damageBonus, int castSpeedBonus) GetSpellUpgrades(string spellName)
     {
         int damage = 0;
-        int cooldown = 0;
+        int castSpeed = 0;
 
         foreach (var upgrade in UpgradeHistory.Where(u => u.SpellName == spellName))
         {
             damage += upgrade.IncreaseSpellDamage;
-            cooldown += upgrade.ReduceSpellCooldown;
+            castSpeed += upgrade.IncreaseCastSpeed;
         }
 
-        return (damage, cooldown);
+        return (damage, castSpeed);
     }
 
     /// <summary>
@@ -67,7 +73,7 @@ public class GameState
         foreach (var upgrade in UpgradeHistory.Where(u => u.SpellName == null))
         {
             titansFury += upgrade.IncreaseSpellDamage; // Titan's Fury uses damage field for base damage %
-            veilOfHaste += upgrade.ReduceSpellCooldown;
+            veilOfHaste += upgrade.IncreaseCastSpeed;
             casterPrecision += upgrade.IncreaseCriticalChance;
             wizardsEdge += upgrade.IncreaseBaseCriticalDamage;
         }

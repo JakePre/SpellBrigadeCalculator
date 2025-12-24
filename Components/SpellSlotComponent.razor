@@ -148,10 +148,10 @@
                 return 0;
             }
 
-            var (_, spellCooldown) = GameState.GetSpellUpgrades(SpellSlot.Spell.Name);
+            var (_, spellCastSpeed) = GameState.GetSpellUpgrades(SpellSlot.Spell.Name);
             var (_, veilOfHaste, _, _) = GameState.GetGlobalUpgrades();
-            // Total spell CD reduction (acts as divisor, so it's effectively "cast speed increase")
-            return GameState.Wizard.ReduceSpellCooldown + spellCooldown;
+            // Total spell cast speed (acts as divisor, so it's effectively "cast speed increase")
+            return GameState.Wizard.IncreaseCastSpeed + spellCastSpeed;
         }
     }
 
@@ -178,12 +178,12 @@
                 return 0;
             }
 
-            var (_, spellCooldown) = GameState.GetSpellUpgrades(SpellSlot.Spell.Name);
+            var (_, spellCastSpeed) = GameState.GetSpellUpgrades(SpellSlot.Spell.Name);
             var (_, veilOfHaste, _, _) = GameState.GetGlobalUpgrades();
 
             double baseCooldown = SpellSlot.Spell.BaseCooldownMs / 1000.0;
             double globalCDMultiplier = Math.Max(1 - (GameState.Wizard.ReduceGlobalCooldown + veilOfHaste) / 100.0, 0.1);
-            double spellCDDivisor = 1 + (GameState.Wizard.ReduceSpellCooldown + spellCooldown) / 100.0;
+            double spellCDDivisor = 1 + (GameState.Wizard.IncreaseCastSpeed + spellCastSpeed) / 100.0;
 
             return baseCooldown * globalCDMultiplier / spellCDDivisor;
         }
@@ -255,9 +255,9 @@
 
         var upgrade = new Upgrade
         {
-            Name = $"{SpellSlot.Spell.Name} Cooldown -{cooldownValue}%",
+            Name = $"{SpellSlot.Spell.Name} Cast Speed +{cooldownValue}%",
             SpellName = SpellSlot.Spell.Name,
-            ReduceSpellCooldown = cooldownValue
+            IncreaseCastSpeed = cooldownValue
         };
         var newDps = DpsEngine.CalculateDpsWithUpgrade(GameState, SpellSlot, upgrade);
         return (newDps - currentDps) / currentDps * 100;
@@ -297,9 +297,9 @@
 
         GameState.AddUpgrade(new Upgrade
         {
-            Name = $"{SpellSlot.Spell.Name} Cooldown -{value}%",
+            Name = $"{SpellSlot.Spell.Name} Cast Speed +{value}%",
             SpellName = SpellSlot.Spell.Name,
-            ReduceSpellCooldown = value
+            IncreaseCastSpeed = value
         });
         await OnStateChanged.InvokeAsync();
     }

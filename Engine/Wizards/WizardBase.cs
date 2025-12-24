@@ -13,9 +13,9 @@ public abstract record WizardBase
     public int TitansFury { get; init; } = 0;
 
     /// <summary>
-    /// Wiki: "Reduce Spell Cooldown" (percentage)
+    /// Wiki: "Increase Cast Speed" (percentage)
     /// </summary>
-    public int ReduceSpellCooldown { get; init; } = 0;
+    public int IncreaseCastSpeed { get; init; } = 0;
 
     /// <summary>
     /// Wiki: "Reduce Global Cooldown" (Veil of Haste) (percentage)
@@ -29,10 +29,10 @@ public abstract record WizardBase
     public int SignatureSpellDamageBonus { get; init; } = 0;
 
     /// <summary>
-    /// Signature spell bonus: Reduce Spell Cooldown (percentage)
+    /// Signature spell bonus: Increase Cast Speed (percentage)
     /// This bonus ONLY applies to the wizard's signature spell
     /// </summary>
-    public int SignatureSpellCooldownReduction { get; init; } = 0;
+    public int SignatureSpellCastSpeedBonus { get; init; } = 0;
 
     /// <summary>
     /// Wiki: "Increase Critical Chance" (percentage, base 5%)

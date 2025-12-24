@@ -36,13 +36,16 @@ The application will start at `https://localhost:7092` or `http://localhost:5037
 
 ## DPS Formula
 
-The calculator uses the official DPS formula from the game:
+The calculator uses the following formula for the game:
 
 ```
 DPS = (BaseDmg + TitansFury) × (1 + IncSpellDmg/100) × (1 + CritChance/100 × CritMult/100)
       ─────────────────────────────────────────────────────────────────────────────────────
               BaseCDms × (1 - RedGlobalCD/100) / (1 + RedSpellCD/100) × 1/1000
 ```
+
+There might be other caps and methods to calculate the precise damage output.
+So this is just a help on what to choose along the way. Not a 100% accurate number.
 
 ## Resources
 

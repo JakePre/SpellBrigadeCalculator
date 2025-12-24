@@ -10,7 +10,7 @@ public record Upgrade
     public string? SpellName { get; init; }
 
     public int IncreaseSpellDamage { get; init; } = 0;
-    public int ReduceSpellCooldown { get; init; } = 0;
+    public int IncreaseCastSpeed { get; init; } = 0;
     public int IncreaseCriticalChance { get; init; } = 0;
     public int IncreaseBaseCriticalDamage { get; init; } = 0;
 
@@ -24,9 +24,9 @@ public record Upgrade
                 return $"{target} - Increase Spell Damage: {IncreaseSpellDamage}%";
             }
 
-            if (ReduceSpellCooldown > 0)
+            if (IncreaseCastSpeed > 0)
             {
-                return $"{target} - Increase Cast Speed: {ReduceSpellCooldown}%";
+                return $"{target} - Increase Cast Speed: {IncreaseCastSpeed}%";
             }
 
             if (IncreaseCriticalChance > 0)
