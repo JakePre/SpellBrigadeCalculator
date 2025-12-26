@@ -20,7 +20,7 @@ public class WizardService
         new Bryony()
     ];
 
-    public IReadOnlyList<WizardBase> GetAllWizards() => _wizards;
+    public IReadOnlyList<WizardBase> GetAllWizards() => _wizards.OrderBy(x => x.Name).ToList();
 
     public WizardBase? GetWizardByName(string name) =>
         _wizards.FirstOrDefault(w => w.Name == name);

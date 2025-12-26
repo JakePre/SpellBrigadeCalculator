@@ -25,7 +25,7 @@ public class SpellService
         new TalonSlash()
     ];
 
-    public IReadOnlyList<SpellBase> GetAllSpells() => _spells;
+    public IReadOnlyList<SpellBase> GetAllSpells() => _spells.OrderBy(x => x.Name).ToList();
 
     public SpellBase? GetSpellByName(string name) =>
         _spells.FirstOrDefault(s => s.Name == name);

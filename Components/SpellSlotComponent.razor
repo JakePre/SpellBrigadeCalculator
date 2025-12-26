@@ -135,7 +135,7 @@
             }
 
             var (spellDamage, _) = GameState.GetSpellUpgrades(SpellSlot.Spell.Name);
-            return GameState.Wizard.IncreaseSpellDamage + spellDamage;
+            return GameState.Wizard.IncreaseSpellDamage + spellDamage + GameState.EnchantmentDamagePercent;
         }
     }
 
@@ -165,7 +165,7 @@
             }
 
             var (_, veilOfHaste, _, _) = GameState.GetGlobalUpgrades();
-            return GameState.Wizard.ReduceGlobalCooldown + veilOfHaste;
+            return GameState.Wizard.ReduceGlobalCooldown + veilOfHaste + GameState.EnchantmentCastSpeedPercent;
         }
     }
 
@@ -182,7 +182,7 @@
             var (_, veilOfHaste, _, _) = GameState.GetGlobalUpgrades();
 
             double baseCooldown = SpellSlot.Spell.BaseCooldownMs / 1000.0;
-            double globalCDMultiplier = Math.Max(1 - (GameState.Wizard.ReduceGlobalCooldown + veilOfHaste) / 100.0, 0.1);
+            double globalCDMultiplier = Math.Max(1 - (GameState.Wizard.ReduceGlobalCooldown + veilOfHaste + GameState.EnchantmentCastSpeedPercent) / 100.0, 0.1);
             double spellCDDivisor = 1 + (GameState.Wizard.IncreaseCastSpeed + spellCastSpeed) / 100.0;
 
             return baseCooldown * globalCDMultiplier / spellCDDivisor;
@@ -199,7 +199,7 @@
             }
 
             var (_, _, casterPrecision, _) = GameState.GetGlobalUpgrades();
-            return Math.Min(GameState.Wizard.IncreaseCriticalChance + casterPrecision, 100);
+            return Math.Min(GameState.Wizard.IncreaseCriticalChance + casterPrecision + GameState.EnchantmentCritChancePercent, 100);
         }
     }
 
@@ -213,7 +213,7 @@
             }
 
             var (_, _, _, wizardsEdge) = GameState.GetGlobalUpgrades();
-            return GameState.Wizard.IncreaseBaseCriticalDamage + wizardsEdge;
+            return GameState.Wizard.IncreaseBaseCriticalDamage + wizardsEdge + GameState.EnchantmentCritDamagePercent;
         }
     }
 
