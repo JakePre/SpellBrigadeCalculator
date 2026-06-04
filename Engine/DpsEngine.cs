@@ -3,36 +3,82 @@ using SpellBrigadeCalculator.Engine.Wizards;
 
 namespace SpellBrigadeCalculator.Engine;
 
+public class SpellDpsDetails
+{
+    public double BaseDamage { get; set; }
+    public double DamagePerHitNormal { get; set; }
+    public double DamagePerHitCrit { get; set; }
+    public double DamagePerHitAverage { get; set; }
+    public double TotalDamagePerCast { get; set; }
+    public double EffectiveCooldown { get; set; }
+    public double AttacksPerSecond { get; set; }
+    public double Dps { get; set; }
+    public int ProjectileCount { get; set; }
+}
+
 public static class DpsEngine
 {
     /// <summary>
-    /// Calculate DPS for a spell slot using game state and upgrade history
+    /// Calculate detailed stats and DPS for a spell slot
     /// </summary>
-    public static double CalculateDps(GameState game, SpellSlot spellSlot)
+    public static SpellDpsDetails CalculateDpsDetails(GameState game, SpellSlot spellSlot)
     {
+        var details = new SpellDpsDetails();
         if (game.Wizard == null || spellSlot.Spell == null)
         {
-            return 0;
+            return details;
         }
 
         var (spellDamage, spellCastSpeed) = game.GetSpellUpgrades(spellSlot.Spell.Name);
         var (titansFury, veilOfHaste, casterPrecision, wizardsEdge) = game.GetGlobalUpgrades();
         bool isSignatureSpell = spellSlot == game.Spell1;
 
-        return CalculateDps(
-            game.Wizard,
-            spellSlot.Spell,
-            spellDamage,
-            spellCastSpeed,
-            titansFury,
-            veilOfHaste,
-            casterPrecision,
-            wizardsEdge,
-            isSignatureSpell,
-            game.EnchantmentDamagePercent,
-            game.EnchantmentCastSpeedPercent,
-            game.EnchantmentCritChancePercent,
-            game.EnchantmentCritDamagePercent);
+        var wizard = game.Wizard;
+        var spell = spellSlot.Spell;
+
+        details.ProjectileCount = spell.ProjectileCount;
+        details.BaseDamage = spell.BaseDamage;
+
+        // Damage percentage modifiers (additive)
+        double totalDamagePercent = wizard.IncreaseSpellDamage + spellDamage + titansFury + wizard.TitansFury + game.EnchantmentDamagePercent;
+        if (isSignatureSpell)
+        {
+            totalDamagePercent += spell.StartingDamageBonus;
+        }
+        details.DamagePerHitNormal = spell.BaseDamage * (1 + totalDamagePercent / 100.0);
+
+        // Crit Chance and Multiplier
+        double critChance = Math.Min((wizard.IncreaseCriticalChance + casterPrecision + game.EnchantmentCritChancePercent) / 100.0, 1.0);
+        double critMultiplier = (wizard.IncreaseBaseCriticalDamage + wizardsEdge + game.EnchantmentCritDamagePercent) / 100.0;
+        
+        details.DamagePerHitCrit = details.DamagePerHitNormal * critMultiplier;
+
+        double critFactor = 1 + (critChance * (critMultiplier - 1.0));
+        details.DamagePerHitAverage = details.DamagePerHitNormal * critFactor;
+
+        details.TotalDamagePerCast = details.DamagePerHitAverage * spell.ProjectileCount;
+
+        // Effective Cooldown / Cast Speed (additive)
+        double baseCooldownSec = spell.BaseCooldownMs / 1000.0;
+        double totalSpellCastSpeed = wizard.IncreaseCastSpeed + spellCastSpeed + veilOfHaste + game.EnchantmentCastSpeedPercent + wizard.ReduceGlobalCooldown;
+        if (isSignatureSpell)
+        {
+            totalSpellCastSpeed += spell.StartingCastSpeedBonus;
+        }
+        details.EffectiveCooldown = baseCooldownSec / (1 + totalSpellCastSpeed / 100.0);
+        details.AttacksPerSecond = 1.0 / details.EffectiveCooldown;
+
+        details.Dps = details.TotalDamagePerCast / details.EffectiveCooldown;
+
+        return details;
+    }
+
+    /// <summary>
+    /// Calculate DPS for a spell slot using game state and upgrade history
+    /// </summary>
+    public static double CalculateDps(GameState game, SpellSlot spellSlot)
+    {
+        return CalculateDpsDetails(game, spellSlot).Dps;
     }
 
     /// <summary>

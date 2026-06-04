@@ -7,13 +7,9 @@
     @if (IsSignature)
     {
         <select class="spell-select" disabled value="@SpellSlot.Spell?.Name">
-            @if (SpellSlot.Spell != null)
+            @foreach (var spell in AvailableSpells)
             {
-                <option value="@SpellSlot.Spell.Name">@SpellSlot.Spell.Name</option>
-            }
-            else
-            {
-                <option value="">--</option>
+                <option value="@spell.Name">@spell.Name</option>
             }
         </select>
     }
@@ -69,24 +65,32 @@
 
                 <div class="spell-stats">
                     <div class="stat-row">
-                        <span class="stat-label">Titan's Fury</span>
-                        <span class="stat-value">+@TotalTitansFury%</span>
+                        <span class="stat-label">Base Damage</span>
+                        <span class="stat-value">@DpsDetails.BaseDamage</span>
                     </div>
                     <div class="stat-row">
-                        <span class="stat-label">Spell Damage</span>
-                        <span class="stat-value">+@TotalSpellDamagePercent%</span>
+                        <span class="stat-label">Damage/Hit (Normal)</span>
+                        <span class="stat-value">@DpsDetails.DamagePerHitNormal.ToString("N1")</span>
                     </div>
                     <div class="stat-row">
-                        <span class="stat-label">Cast Speed</span>
-                        <span class="stat-value">+@TotalCastSpeedPercent.ToString("F1")%</span>
+                        <span class="stat-label">Damage/Hit (Crit)</span>
+                        <span class="stat-value">@DpsDetails.DamagePerHitCrit.ToString("N1")</span>
                     </div>
                     <div class="stat-row">
-                        <span class="stat-label">Global CD</span>
-                        <span class="stat-value">-@TotalGlobalCDReduction%</span>
+                        <span class="stat-label">Damage/Hit (Avg)</span>
+                        <span class="stat-value">@DpsDetails.DamagePerHitAverage.ToString("N1")</span>
                     </div>
                     <div class="stat-row">
-                        <span class="stat-label">Cast Time</span>
-                        <span class="stat-value">@EffectiveCastTime.ToString("F2")s</span>
+                        <span class="stat-label">Projectiles</span>
+                        <span class="stat-value">@DpsDetails.ProjectileCount</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Attacks / Sec</span>
+                        <span class="stat-value">@DpsDetails.AttacksPerSecond.ToString("F2")</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Effective CD</span>
+                        <span class="stat-value">@DpsDetails.EffectiveCooldown.ToString("F2")s</span>
                     </div>
                     <div class="stat-row">
                         <span class="stat-label">Crit Chance</span>
@@ -113,86 +117,8 @@
     private static readonly int[] DamageUpgradeValues = [10, 15, 25, 35];
     private static readonly int[] CooldownUpgradeValues = [10, 15, 25, 35];
 
-    private double CurrentDps => DpsEngine.CalculateDps(GameState, SpellSlot);
-
-    // Computed stats for display
-    private int TotalTitansFury
-    {
-        get
-        {
-            if (GameState.Wizard == null)
-            {
-                return 0;
-            }
-
-            var (titansFury, _, _, _) = GameState.GetGlobalUpgrades();
-            return GameState.Wizard.TitansFury + titansFury;
-        }
-    }
-
-    private int TotalSpellDamagePercent
-    {
-        get
-        {
-            if (GameState.Wizard == null || SpellSlot.Spell == null)
-            {
-                return 0;
-            }
-
-            var (spellDamage, _) = GameState.GetSpellUpgrades(SpellSlot.Spell.Name);
-            return GameState.Wizard.IncreaseSpellDamage + spellDamage + GameState.EnchantmentDamagePercent;
-        }
-    }
-
-    private double TotalCastSpeedPercent
-    {
-        get
-        {
-            if (GameState.Wizard == null || SpellSlot.Spell == null)
-            {
-                return 0;
-            }
-
-            var (_, spellCastSpeed) = GameState.GetSpellUpgrades(SpellSlot.Spell.Name);
-            var (_, veilOfHaste, _, _) = GameState.GetGlobalUpgrades();
-            // Total spell cast speed (acts as divisor, so it's effectively "cast speed increase")
-            return GameState.Wizard.IncreaseCastSpeed + spellCastSpeed;
-        }
-    }
-
-    private int TotalGlobalCDReduction
-    {
-        get
-        {
-            if (GameState.Wizard == null)
-            {
-                return 0;
-            }
-
-            var (_, veilOfHaste, _, _) = GameState.GetGlobalUpgrades();
-            return GameState.Wizard.ReduceGlobalCooldown + veilOfHaste + GameState.EnchantmentCastSpeedPercent;
-        }
-    }
-
-    private double EffectiveCastTime
-    {
-        get
-        {
-            if (GameState.Wizard == null || SpellSlot.Spell == null)
-            {
-                return 0;
-            }
-
-            var (_, spellCastSpeed) = GameState.GetSpellUpgrades(SpellSlot.Spell.Name);
-            var (_, veilOfHaste, _, _) = GameState.GetGlobalUpgrades();
-
-            double baseCooldown = SpellSlot.Spell.BaseCooldownMs / 1000.0;
-            double globalCDMultiplier = Math.Max(1 - (GameState.Wizard.ReduceGlobalCooldown + veilOfHaste + GameState.EnchantmentCastSpeedPercent) / 100.0, 0.1);
-            double spellCDDivisor = 1 + (GameState.Wizard.IncreaseCastSpeed + spellCastSpeed) / 100.0;
-
-            return baseCooldown * globalCDMultiplier / spellCDDivisor;
-        }
-    }
+    private SpellDpsDetails DpsDetails => DpsEngine.CalculateDpsDetails(GameState, SpellSlot);
+    private double CurrentDps => DpsDetails.Dps;
 
     private int TotalCritChance
     {
