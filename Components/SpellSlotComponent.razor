@@ -6,7 +6,7 @@
 
     @if (IsSignature)
     {
-        <select class="spell-select" disabled>
+        <select class="spell-select" disabled value="@SpellSlot.Spell?.Name">
             @if (SpellSlot.Spell != null)
             {
                 <option value="@SpellSlot.Spell.Name">@SpellSlot.Spell.Name</option>
@@ -32,6 +32,11 @@
     {
         <div class="spell-icon">
             <img src="@SpellSlot.Spell.ImagePath" alt="@SpellSlot.Spell.Name" />
+        </div>
+
+        <div class="current-damage">
+            <span class="damage-label">Calculated DPS</span>
+            <span class="damage-value">@CurrentDps.ToString("N1")</span>
         </div>
 
         <div class="upgrade-section">
