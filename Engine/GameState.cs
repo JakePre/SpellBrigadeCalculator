@@ -19,9 +19,12 @@ public class GameState
     public int EnchantmentCritChancePercent { get; set; } = 0;
     public int EnchantmentCritDamagePercent { get; set; } = 0;
 
+    public bool UseAscension { get; set; } = false;
+
     public void Reset()
     {
         Wizard = null;
+        UseAscension = false;
         Spell1.Spell = null;
         Spell2.Spell = null;
         Spell3.Spell = null;

@@ -6,23 +6,27 @@ public class SpellService
 {
     private readonly List<SpellBase> _spells =
     [
-        new MagicMissile(),
-        new AstralOrbs(),
-        new Moonerang(),
-        new RockyRoad(),
-        new SolarPulse(),
-        new ArcaneBroadsword(),
-        new PhantomBlades(),
-        new RuneBurst(),
-        new FallingStars(),
         new AetherBeam(),
+        new ArcaneBroadsword(),
+        new AstralOrbs(),
         new AuroraWings(),
-        new VengefulSprout(),
-        new NecroWhirl(),
-        new HexBomb(),
-        new ScepterMesh(),
+        new BellMarch(),
+        new CardinalRunes(),
         new ChthonicCharge(),
-        new TalonSlash()
+        new FallingStars(),
+        new HexBomb(),
+        new ImpishHavoc(),
+        new MagicMissile(),
+        new Moonerang(),
+        new NecroWhirl(),
+        new PhantomBlades(),
+        new RockyRoad(),
+        new ScepterMesh(),
+        new SolarPulse(),
+        new SpearBarrage(),
+        new SwirlSickle(),
+        new TalonSlash(),
+        new VengefulSprout()
     ];
 
     public IReadOnlyList<SpellBase> GetAllSpells() => _spells.OrderBy(x => x.Name).ToList();

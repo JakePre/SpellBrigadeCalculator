@@ -4,14 +4,12 @@ public record WizardKing : WizardBase
 {
     public override string Name => "Wizard King";
     public override string SignatureSpell => "Magic Missile";
+    public override string AlternateStartingSpell => "Spear Barrage";
     public override string ImagePath => "https://thespellbrigade.wiki.gg/images/thumb/4/4a/OriginalWizardKingSkin.png/173px-OriginalWizardKingSkin.png";
 
     public WizardKing()
     {
-        // Global wizard stat
-        IncreaseCriticalChance = 15; // Base 5% + 10% = 15%
-        
-        // Signature spell bonuses (only apply to Magic Missile)
+        IncreaseCriticalChance = 15;
         SignatureSpellCastSpeedBonus = 8;
     }
 }

@@ -6,18 +6,21 @@ public class WizardService
 {
     private readonly List<WizardBase> _wizards =
     [
-        new Reginald(),
-        new MoonMage(),
-        new Kavin(),
-        new SunMage(),
-        new Ludwig(),
+        new Aldric(),
+        new Balthazar(),
+        new Bryony(),
         new Campanelli(),
         new Hatti(),
-        new WizardKing(),
-        new StarMage(),
-        new Aldric(),
+        new Kavin(),
+        new Knelly(),
+        new Ludwig(),
         new Maggie(),
-        new Bryony()
+        new MoonMage(),
+        new Pipwick(),
+        new Reginald(),
+        new StarMage(),
+        new SunMage(),
+        new WizardKing()
     ];
 
     public IReadOnlyList<WizardBase> GetAllWizards() => _wizards.OrderBy(x => x.Name).ToList();

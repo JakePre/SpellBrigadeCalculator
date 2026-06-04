@@ -25,5 +25,18 @@ public abstract record SpellBase
     /// <summary>
     /// Path to spell icon image
     /// </summary>
+    /// <summary>
+    /// Path to spell icon image
+    /// </summary>
     public abstract string ImagePath { get; }
+
+    /// <summary>
+    /// Starting damage bonus when this spell is selected as the starting/signature spell
+    /// </summary>
+    public virtual int StartingDamageBonus => 0;
+
+    /// <summary>
+    /// Starting cast speed bonus when this spell is selected as the starting/signature spell
+    /// </summary>
+    public virtual int StartingCastSpeedBonus => 0;
 }

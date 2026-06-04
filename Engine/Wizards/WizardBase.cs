@@ -55,6 +55,11 @@ public abstract record WizardBase
     public abstract string SignatureSpell { get; }
 
     /// <summary>
+    /// Alternate starting spell (Prestige / Ascension starting weapon)
+    /// </summary>
+    public abstract string AlternateStartingSpell { get; }
+
+    /// <summary>
     /// Path to wizard portrait image
     /// </summary>
     public abstract string ImagePath { get; }
