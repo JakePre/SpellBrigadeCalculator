@@ -114,65 +114,50 @@ P(\text{Legendary}) &= \max(0\%, 0\% + 0.3\% \times \text{Luck})
 
 ## 4. Elements & Status Effects
 
-Spells can be infused with different elements. When a spell lands, it delegates status effect applications to the `ElementEffectHandlers` system. There are three categories of elements: Core, Mastered (Double), and Hybrid.
+Spells can be infused with elements. When a spell hits a target, it delegates the status effect application to the elements engine. The damage calculations, duration, tick rates, and scaling behavior for all 20 elements (5 Core, 5 Mastered, and 10 Hybrid) are detailed below.
 
-### Core Elements (Single)
-1.  **Fire** (Burn)
-    *   *BurnDamageFactor*: Damage modifier for burn ticks.
-    *   *NumberOfBurns*: Total ticks applied (default is 20 max ticks).
-    *   *SecondsBetweenBurns*: Time interval between burn ticks.
-    *   *Critical Hit capable*: Burn damage ticks can critically strike.
-2.  **Ice** (Chill)
-    *   *ChillDuration*: Duration of the slow effect.
-    *   *ChillDamageFactor*: Speed slow factor (clamps target movement speed between $0.2\times$ and $0.72\times$).
-3.  **Acid** (Poison)
-    *   *AcidDuration*: Duration of the acid debuff.
-    *   *ResistanceReduction*: Reduces the enemy's elemental resistance, causing them to take increased damage.
-4.  **Lightning** (Chain)
-    *   *LightningDamageFactor*: Damage factor for the lightning strikes.
-    *   *NumberOfLightningRicochets*: The number of bounces/targets the lightning chains to.
-5.  **Dark** (Corruption)
-    *   *CorruptionDamageFactor*: Damage scaling factor for corruption ticks/explosions.
-    *   *CorruptionElementBehaviour*: Handles how corruption interacts with core elements.
+### Core Elements (Single Infusion)
+
+Core elements are applied when a spell has a single element infusion:
+
+| Element | Status Effect | Key Stat | Value | Formula & Behavior |
+| :--- | :--- | :--- | :--- | :--- |
+| **Fire** | **Burn** | `BurnDamageFactor`<br>`NumberOfBurns`<br>`SecondsBetweenBurns` | `0.33` ($33\%$)<br>`3`<br>`0.5` sec | Deals periodic damage over time.<br>$$\text{Tick Damage} = \text{Base Damage} \times 0.33$$<br>$$\text{Total Burn Damage} = \text{Tick Damage} \times 3 = 0.99 \times \text{Base Damage}$$<br>Total duration is $1.5$ sec. Burn ticks can critically strike. |
+| **Ice** | **Chill** | `ChillDuration`<br>`ChillDamageFactor` | `4.0` sec<br>`0.001` ($0.1\%$) | Slows enemy movement speed. Speed slow factor clamps target speed between $0.2\times$ and $0.72\times$. Deals minor $0.1\%$ tick damage. |
+| **Acid** | **Poison** | `AcidDuration`<br>`ResistanceReduction` | `3.0` sec<br>`0.5` ($50\%$) | Reduces the target's elemental resistance, causing them to take increased damage:<br>$$\text{Target Resistance} = \text{Base Resistance} - 0.5$$<br>$$\text{Modified Damage} = \text{Raw Damage} \times (1 - \text{Target Resistance})$$<br>*(At $0\%$ base resistance, this represents a $1.5\times$ damage multiplier.)* |
+| **Lightning** | **Chain** | `LightningDamageFactor`<br>`NumberOfLightningRicochets` | `0.5` ($50\%$)<br>`2` bounces | Lightning chains to nearby targets.<br>$$\text{Chain Hit Damage} = \text{Base Damage} \times 0.5$$<br>Hits up to 3 targets total (1 initial + 2 chains), representing up to $2.0\times$ total damage output. |
+| **Dark** | **Corruption** | `CorruptionDamageFactor`<br>`CorruptionElementBehaviour` | `1.5` ($150\%$)<br>`1` (`UseNoElement`) | Applies corruption value. Upon reaching $1.0$ corruption, target state shifts to `AttackOtherEnemies` (charmed/mind-controlled). Deals explosion damage when triggered:<br>$$\text{Corruption Damage} = \text{Base Damage} \times 1.5$$ |
 
 ---
 
-### Mastered Elements (Double)
-Mastered elements occur when matching the same element type twice:
-1.  **Fire Double**: Enhanced burn tick damage scaling.
-2.  **Ice Double** (Freeze): Adds a chance to completely freeze chilled targets.
-    *   *FreezeChanceBase*: Base chance to trigger freeze.
-    *   *FreezeDuration*: Duration the enemy is completely frozen.
-    *   *FreezeImmunityDuration*: Immunity window after thawing.
-3.  **Acid Double** (Weaken): Adds a weakening debuff to enemies.
-    *   *DamageReduction*: Reduces the damage dealt by the afflicted enemies.
-4.  **Lightning Double** (Double Strike):
-    *   *ExtraLightningStrikePrefab*: Spawns a secondary lightning bolt.
-    *   *ExtraLightningStrikeDamageFactor*: Damage factor for the extra strike.
-5.  **Dark Double** (Chain Corruption):
-    *   *CorruptedEnemyCorruptionDamageFactor*: Corrupted enemies deal bonus corruption damage to nearby targets.
+### Mastered Elements (Double Infusion)
+
+Mastered elements are applied when a spell is infused with the same element twice:
+
+| Element | Status Effect | Key Stat | Value | Formula & Behavior |
+| :--- | :--- | :--- | :--- | :--- |
+| **Fire Double** | **Enhanced Burn** | `BurnDamageFactor`<br>`NumberOfBurns`<br>`SecondsBetweenBurns` | `0.45` ($45\%$)<br>`5`<br>`0.5` sec | Deals higher periodic damage over a longer duration.<br>$$\text{Tick Damage} = \text{Base Damage} \times 0.45$$<br>$$\text{Total Burn Damage} = \text{Tick Damage} \times 5 = 2.25 \times \text{Base Damage}$$<br>Total duration is $2.5$ sec. Burn ticks can critically strike. |
+| **Ice Double** | **Freeze** | `ChillDuration`<br>`ChillDamageFactor`<br>`FreezeChanceBase`<br>`FreezeDuration`<br>`FreezeImmunityDuration` | `4.0` sec<br>`0.001` ($0.1\%$)<br>`0.4` ($40\%$)<br>`2.0` sec<br>`2.0` sec | Chills the target. Has a $40\%$ chance to completely freeze a chilled target for $2.0$ seconds. Target gains freeze immunity for $2.0$ seconds after thawing. |
+| **Acid Double** | **Weaken** | `AcidDuration`<br>`ResistanceReduction`<br>`DamageReduction` | `3.0` sec<br>`0.5` ($50\%$)<br>`0.1` ($10\%$) | Reduces target resistance by $50\%$ points. Also applies Weaken, reducing the damage dealt by the afflicted enemies by $10\%$ (`DamageReduction` = $0.1$). |
+| **Lightning Double**| **Double Strike** | `LightningDamageFactor`<br>`NumberOfLightningRicochets`<br>`ExtraLightningStrikeDamageFactor` | `0.5` ($50\%$)<br>`2`<br>`1.45` ($145\%$) | Chains lightning normally (up to 2 bounces). Additionally, triggers an extra lightning strike dealing $145\%$ base damage:<br>$$\text{Extra Strike Damage} = \text{Base Damage} \times 1.45$$ |
+| **Dark Double** | **Chain Corruption**| `CorruptionDamageFactor`<br>`CorruptionElementBehaviour`<br>`CorruptedEnemyCorruptionDamageFactor`| `2.625` ($262.5\%$)<br>`2` (`UseDarkElement`)`1.0` ($100\%$) | Charmed corrupted target spreads corruption to nearby enemies. Deals increased corruption damage:<br>$$\text{Corruption Damage} = \text{Base Damage} \times 2.625$$<br>Corrupted target attacks or explosions deal $100\%$ base damage to nearby targets. |
 
 ---
 
 ### Hybrid Elements (Dual Combinations)
+
 Formed by combining two different core elements:
-1.  **Fire + Lightning (FireLightning)**:
-    *   Lightning chains to multiple targets, and all ricocheted hits also apply the Fire Burn debuff.
-2.  **Fire + Ice (FireIce)**:
-    *   Combines burn ticks with freeze duration, and adds a knockback effect (*KnockbackForce* and *KnockbackDuration*).
-3.  **Acid + Fire (AcidFire)**:
-    *   Applies burn damage and the acid resistance debuff. When an enemy dies or burns, they explode/splash acid-fire (*AcidFireSplashPrefab*) dealing damage in a radius.
-4.  **Acid + Lightning (AcidLightning)**:
-    *   Chains lightning to targets, and the ricochets propagate the acid resistance reduction debuff to all chain targets.
-5.  **Acid + Ice (AcidIce)**:
-    *   Applies acid debuff, chill slow, and freeze damage scaling. Hits trigger a knockback explosion in a radius (*AcidIceKnockbackPrefab*).
-6.  **Ice + Lightning (IceLightning)**:
-    *   Chains lightning to targets, and the ricochets apply the Chill slow debuff to all chain targets.
-7.  **Dark + Fire (DarkFire)**:
-    *   Combines corruption buildup with burn ticks.
-8.  **Dark + Lightning (DarkLightning)**:
-    *   Combines corruption buildup with chain lightning. The bounced chains propagate corruption to all chain targets.
-9.  **Acid + Dark (AcidDark)**:
-    *   Combines acid resistance reduction with corruption buildup.
-10. **Dark + Ice (DarkIce)**:
-    *   Combines corruption buildup with Chill slow.
+
+| Combination | Key Stat | Value | Formula & Behavior |
+| :--- | :--- | :--- | :--- |
+| **Fire + Ice** | `BurnDamageFactor`<br>`NumberOfBurns`<br>`SecondsBetweenBurns`<br>`FreezeDamageFactor`<br>`FreezeDuration`<br>`KnockbackForce`<br>`KnockbackDuration` | `0.33` ($33\%$)<br>`3`<br>`0.5` sec<br>`0.001` ($0.1\%$)<br>`4.0` sec<br>`8.0`<br>`0.4` sec | Combines burn damage ticks ($33\%$ base damage) with a $4.0$-sec freeze. Additionally triggers a knockback explosion with a force of $8.0$ lasting $0.4$ seconds. |
+| **Fire + Lightning** | `LightningDamageFactor`<br>`NumberOfLightningRicochets`<br>`BurnDamageFactor`<br>`NumberOfBurns`<br>`SecondsBetweenBurns`<br>`RicochetBurnDamageFactor` | `0.5` ($50\%$)<br>`2` bounces<br>`0.33` ($33\%$)<br>`3`<br>`0.5` sec<br>`0.25` ($25\%$) | Chains lightning normally. Bounced hits apply a burn status effect. Bounced ticks deal $25\%$ base damage per tick instead of the main $33\%$:<br>$$\text{Ricochet Tick Damage} = \text{Base Damage} \times 0.25$$ |
+| **Acid + Fire** | `BurnDamageFactor`<br>`NumberOfBurns`<br>`SecondsBetweenBurns`<br>`AcidDuration`<br>`ResistanceReduction`<br>`AcidFireSplashDamageFactor`<br>`AcidFireSplashRadius` | `0.33` ($33\%$)<br>`3`<br>`0.5` sec<br>`3.0` sec<br>`0.5` ($50\%$)<br>`0.25` ($25\%$)<br>`2.0` m | Applies burn ticks and acid resistance reduction ($50\%$ points). When targets die or burn, they explode/splash acid-fire dealing $25\%$ base damage in a $2.0$-meter radius:<br>$$\text{Splash Damage} = \text{Base Damage} \times 0.25$$ |
+| **Acid + Lightning** | `AcidDuration`<br>`ResistanceReduction`<br>`LightningDamageFactor`<br>`NumberOfLightningRicochets`<br>`RicochetResistanceReduction` | `3.0` sec<br>`0.5` ($50\%$)<br>`0.5` ($50\%$)<br>`2` bounces<br>`0.25` ($25\%$) | Chains lightning normally. Main hits apply $50\%$ points resistance reduction, while ricocheted chain hits apply a smaller resistance reduction of $25\%$ points (`RicochetResistanceReduction` = $0.25$). |
+| **Acid + Ice** | `AcidDuration`<br>`ResistanceReduction`<br>`FreezeDamageFactor`<br>`ChillDuration`<br>`KnockbackForce`<br>`KnockbackRadius`<br>`KnockbackDuration` | `3.0` sec<br>`0.5` ($50\%$)<br>`0.0`<br>`4.0` sec<br>`8.0`<br>`2.0` m<br>`0.4` sec | Applies acid reduction ($50\%$) and chill slow ($4.0$ sec). Hits trigger a knockback wave with a force of $8.0$ and radius of $2.0$ meters lasting $0.4$ seconds. |
+| **Ice + Lightning** | `LightningDamageFactor`<br>`NumberOfLightningRicochets`<br>`ChillDuration`<br>`ChillDamageFactor`<br>`RicochetChillFactor` | `0.5` ($50\%$)<br>`2` bounces<br>`4.0` sec<br>`0.001` ($0.1\%$)<br>`0.25` ($25\%$) | Chains lightning normally. Ricochet chain hits propagate a chill slow with $25\%$ effectiveness/duration compared to the main hits. |
+| **Dark + Fire** | `CorruptionDamageFactor`<br>`BurnDamageFactor`<br>`NumberOfBurns`<br>`SecondsBetweenBurns`<br>`CorruptionElementBehaviour` | `1.5` ($150\%$)<br>`0.33` ($33\%$)<br>`3`<br>`0.5` sec<br>`0` (`UseCoreElement`) | Charmed targets apply core element burn ticks. Deals corruption explosion damage ($150\%$ base damage). |
+| **Dark + Lightning** | `CorruptionDamageFactor`<br>`LightningDamageFactor`<br>`NumberOfLightningRicochets`<br>`CorruptionElementBehaviour`<br>`RicochetCorruptionFactor` | `1.5` ($150\%$)<br>`0.5` ($50\%$)<br>`2` bounces<br>`1` (`UseNoElement`)`0.25` ($25\%$) | Chains lightning. Bounced chain hits build up corruption at $25\%$ of the base rate (`RicochetCorruptionFactor` = $0.25$). |
+| **Acid + Dark** | `CorruptionDamageFactor`<br>`AcidDuration`<br>`ResistanceReduction`<br>`CorruptionElementBehaviour` | `1.5` ($150\%$)<br>`3.0` sec<br>`0.5` ($50\%$)<br>`0` (`UseCoreElement`) | Applies acid resistance reduction ($50\%$ points) and corruption build up. Charmed targets apply/interact with core elements. |
+| **Dark + Ice** | `CorruptionDamageFactor`<br>`CorruptionElementBehaviour`<br>`ChillDamageFactor`<br>`ChillDuration` | `1.5` ($150\%$)<br>`0` (`UseCoreElement`)`0.5` ($50\%$)<br>`2.0` sec | Applies corruption build up ($150\%$ damage). Charmed target attacks apply a $50\%$ slow lasting $2.0$ seconds. |
+
