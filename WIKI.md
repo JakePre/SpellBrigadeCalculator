@@ -109,3 +109,70 @@ P(\text{Legendary}) &= \max(0\%, 0\% + 0.3\% \times \text{Luck})
 *   The game restricts Luck upgrades in the shop based on a threshold.
 *   Once a player reaches **$25$ Luck or higher**, Luck upgrades are excluded from the level-up store card pool.
 *   Thus, the effective **soft cap** for Luck upgrades is **$24$ Luck**. Once you hit $25$, you can no longer draft new Luck card upgrades from the store.
+
+---
+
+## 4. Elements & Status Effects
+
+Spells can be infused with different elements. When a spell lands, it delegates status effect applications to the `ElementEffectHandlers` system. There are three categories of elements: Core, Mastered (Double), and Hybrid.
+
+### Core Elements (Single)
+1.  **Fire** (Burn)
+    *   *BurnDamageFactor*: Damage modifier for burn ticks.
+    *   *NumberOfBurns*: Total ticks applied (default is 20 max ticks).
+    *   *SecondsBetweenBurns*: Time interval between burn ticks.
+    *   *Critical Hit capable*: Burn damage ticks can critically strike.
+2.  **Ice** (Chill)
+    *   *ChillDuration*: Duration of the slow effect.
+    *   *ChillDamageFactor*: Speed slow factor (clamps target movement speed between $0.2\times$ and $0.72\times$).
+3.  **Acid** (Poison)
+    *   *AcidDuration*: Duration of the acid debuff.
+    *   *ResistanceReduction*: Reduces the enemy's elemental resistance, causing them to take increased damage.
+4.  **Lightning** (Chain)
+    *   *LightningDamageFactor*: Damage factor for the lightning strikes.
+    *   *NumberOfLightningRicochets*: The number of bounces/targets the lightning chains to.
+5.  **Dark** (Corruption)
+    *   *CorruptionDamageFactor*: Damage scaling factor for corruption ticks/explosions.
+    *   *CorruptionElementBehaviour*: Handles how corruption interacts with core elements.
+
+---
+
+### Mastered Elements (Double)
+Mastered elements occur when matching the same element type twice:
+1.  **Fire Double**: Enhanced burn tick damage scaling.
+2.  **Ice Double** (Freeze): Adds a chance to completely freeze chilled targets.
+    *   *FreezeChanceBase*: Base chance to trigger freeze.
+    *   *FreezeDuration*: Duration the enemy is completely frozen.
+    *   *FreezeImmunityDuration*: Immunity window after thawing.
+3.  **Acid Double** (Weaken): Adds a weakening debuff to enemies.
+    *   *DamageReduction*: Reduces the damage dealt by the afflicted enemies.
+4.  **Lightning Double** (Double Strike):
+    *   *ExtraLightningStrikePrefab*: Spawns a secondary lightning bolt.
+    *   *ExtraLightningStrikeDamageFactor*: Damage factor for the extra strike.
+5.  **Dark Double** (Chain Corruption):
+    *   *CorruptedEnemyCorruptionDamageFactor*: Corrupted enemies deal bonus corruption damage to nearby targets.
+
+---
+
+### Hybrid Elements (Dual Combinations)
+Formed by combining two different core elements:
+1.  **Fire + Lightning (FireLightning)**:
+    *   Lightning chains to multiple targets, and all ricocheted hits also apply the Fire Burn debuff.
+2.  **Fire + Ice (FireIce)**:
+    *   Combines burn ticks with freeze duration, and adds a knockback effect (*KnockbackForce* and *KnockbackDuration*).
+3.  **Acid + Fire (AcidFire)**:
+    *   Applies burn damage and the acid resistance debuff. When an enemy dies or burns, they explode/splash acid-fire (*AcidFireSplashPrefab*) dealing damage in a radius.
+4.  **Acid + Lightning (AcidLightning)**:
+    *   Chains lightning to targets, and the ricochets propagate the acid resistance reduction debuff to all chain targets.
+5.  **Acid + Ice (AcidIce)**:
+    *   Applies acid debuff, chill slow, and freeze damage scaling. Hits trigger a knockback explosion in a radius (*AcidIceKnockbackPrefab*).
+6.  **Ice + Lightning (IceLightning)**:
+    *   Chains lightning to targets, and the ricochets apply the Chill slow debuff to all chain targets.
+7.  **Dark + Fire (DarkFire)**:
+    *   Combines corruption buildup with burn ticks.
+8.  **Dark + Lightning (DarkLightning)**:
+    *   Combines corruption buildup with chain lightning. The bounced chains propagate corruption to all chain targets.
+9.  **Acid + Dark (AcidDark)**:
+    *   Combines acid resistance reduction with corruption buildup.
+10. **Dark + Ice (DarkIce)**:
+    *   Combines corruption buildup with Chill slow.
